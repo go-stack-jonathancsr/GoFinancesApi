@@ -19,6 +19,10 @@ export default class AddTransaction1590273367233 implements MigrationInterface {
             type: 'varchar',
           },
           {
+            name: 'type',
+            type: 'varchar',
+          },
+          {
             name: 'value',
             type: 'float',
           },
@@ -28,6 +32,11 @@ export default class AddTransaction1590273367233 implements MigrationInterface {
           },
           {
             name: 'created_at',
+            type: 'timestamp',
+            default: 'now()',
+          },
+          {
+            name: 'updated_at',
             type: 'timestamp',
             default: 'now()',
           },
