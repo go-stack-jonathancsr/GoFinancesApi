@@ -38,7 +38,7 @@ transactionsRouter.delete('/:id', async (request, response) => {
 
   const deleteTransactionService = new DeleteTransactionService();
 
-  deleteTransactionService.execute(id);
+  await deleteTransactionService.execute(id);
 
   return response.json('sucsess');
 });
