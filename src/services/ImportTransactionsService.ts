@@ -10,7 +10,7 @@ class ImportTransactionsService {
   async execute(filename: string): Promise<Transaction[]> {
     const pathFile = path.join(uploadConfig.directory, filename);
 
-    async function loadCSV(filePath: string): any[] {
+    async function loadCSV(filePath: string): Promise<any[]> {
       const readCSVStream = fs.createReadStream(filePath);
 
       const parseStream = csvParse({
