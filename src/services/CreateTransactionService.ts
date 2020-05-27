@@ -31,6 +31,13 @@ class CreateTransactionService {
       throw new AppError('The type is not suported');
     }
 
+    if (type === 'outcome') {
+      const balance = await transactionRepository.getBalance();
+      if (balance.total - value < 0) {
+        throw new AppError('Insufficient balance', 400);
+      }
+    }
+
     const existCategory = await categoryRepository.findOne({
       where: { title: category },
     });
