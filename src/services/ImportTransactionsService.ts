@@ -6,11 +6,18 @@ import uploadConfig from '../config/upload';
 import CreateTransactionService from './CreateTransactionService';
 import Transaction from '../models/Transaction';
 
+interface RequestTransaction {
+  title: string;
+  type: string;
+  value: number;
+  category: string;
+}
+
 class ImportTransactionsService {
   async execute(filename: string): Promise<Transaction[]> {
     const pathFile = path.join(uploadConfig.directory, filename);
 
-    async function loadCSV(filePath: string): Promise<any[]> {
+    async function loadCSV(filePath: string): Promise<RequestTransaction[]> {
       const readCSVStream = fs.createReadStream(filePath);
 
       const parseStream = csvParse({
@@ -21,10 +28,11 @@ class ImportTransactionsService {
 
       const parseCSV = readCSVStream.pipe(parseStream);
 
-      const lines: any[] = [];
+      const lines: RequestTransaction[] = [];
 
       parseCSV.on('data', async line => {
-        lines.push(line);
+        const [title, type, value, category] = line;
+        lines.push({ title, type, value, category });
       });
 
       await new Promise(resolve => {
@@ -34,12 +42,15 @@ class ImportTransactionsService {
       return lines;
     }
     const lines = await loadCSV(pathFile);
-    const createTransactionService = new CreateTransactionService();
-    const transactions: Transaction[] = [];
+    async function createTransactions(
+      transactionsArray: RequestTransaction[],
+    ): Promise<Transaction[]> {
+      const createTransactionService = new CreateTransactionService();
+      const transactions: Transaction[] = [];
 
-    await Promise.all(
-      lines.map(async element => {
-        const [title, type, value, category] = element;
+      // eslint-disable-next-line no-restricted-syntax
+      for (const { title, type, value, category } of transactionsArray) {
+        // eslint-disable-next-line no-await-in-loop
         const transaction = await createTransactionService.execute({
           title,
           type,
@@ -47,10 +58,10 @@ class ImportTransactionsService {
           category,
         });
         transactions.push(transaction);
-      }),
-    );
-
-    return transactions;
+      }
+      return transactions;
+    }
+    return createTransactions(lines);
   }
 }
 
